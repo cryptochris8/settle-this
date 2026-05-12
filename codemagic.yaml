@@ -6,8 +6,9 @@ workflows:
     integrations:
       app_store_connect: Pregame        # shared ASC API integration for all athlete-domains apps
     environment:
-      groups:
-        - apple_developer               # team-level group with the shared ASC API key vars
+      # No variable groups needed — `integrations: app_store_connect: Pregame`
+      # above injects the ASC credentials. Add a group here only when an app
+      # needs custom encrypted env vars (e.g. REVENUECAT_API_KEY).
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.athletedomains.settleThis
