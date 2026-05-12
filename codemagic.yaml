@@ -29,6 +29,12 @@ workflows:
       - name: Pod install
         working_directory: settle_this/ios
         script: pod install
+      - name: Apply signing profiles to Xcode project
+        # Reads the uploaded provisioning profile + cert (made available by the
+        # `ios_signing:` block above) and writes /Users/builder/export_options.plist
+        # which `flutter build ipa` needs to package the IPA. Required even with
+        # auto-managed signing.
+        script: xcode-project use-profiles
       - name: Increment build number + build IPA
         working_directory: settle_this
         script: |
