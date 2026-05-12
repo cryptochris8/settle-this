@@ -15,7 +15,9 @@ workflows:
         APP_STORE_APPLE_ID: "6768496159"
         BUNDLE_ID: com.athletedomains.settleThis
         APPLE_TEAM_ID: Q3UH3Y4QUU
-        REVENUECAT_API_KEY: ""          # leave empty until RevenueCat is configured
+        # REVENUECAT_API_KEY intentionally not declared — passed as empty literal
+        # to flutter build below. Add as a Codemagic secret variable once
+        # RevenueCat is configured.
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -43,7 +45,7 @@ workflows:
           BUILD_NUMBER=$(($(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID") + 1))
           flutter build ipa --release \
             --build-number=$BUILD_NUMBER \
-            --dart-define=REVENUECAT_API_KEY="$REVENUECAT_API_KEY" \
+            --dart-define=REVENUECAT_API_KEY="${REVENUECAT_API_KEY:-}" \
             --export-options-plist=/Users/builder/export_options.plist
     artifacts:
       - settle_this/build/ios/ipa/*.ipa
@@ -61,8 +63,6 @@ workflows:
     max_build_duration: 45
     instance_type: linux_x2
     environment:
-      vars:
-        REVENUECAT_API_KEY: ""
       flutter: stable
     scripts:
       - name: Resolve Flutter deps
@@ -72,6 +72,6 @@ workflows:
         working_directory: settle_this
         script: |
           flutter build apk --debug \
-            --dart-define=REVENUECAT_API_KEY="$REVENUECAT_API_KEY"
+            --dart-define=REVENUECAT_API_KEY="${REVENUECAT_API_KEY:-}"
     artifacts:
       - settle_this/build/app/outputs/apk/debug/*.apk
