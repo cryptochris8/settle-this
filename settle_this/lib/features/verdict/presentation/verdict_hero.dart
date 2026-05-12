@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme.dart';
+import '../../../shared/widgets/judge_pip.dart';
 import '../../../shared/widgets/verdict_badge.dart';
 import '../domain/verdict_status.dart';
 
@@ -102,7 +103,7 @@ class _VerdictHeroState extends State<VerdictHero>
                     child: Opacity(opacity: _ctrl.value, child: child),
                   );
                 },
-                child: _PipStub(quiet: widget.isSoftRedirect),
+                child: JudgePip(quiet: widget.isSoftRedirect),
               ),
             ),
           ],
@@ -148,45 +149,6 @@ class _DocketHeaderStrip extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Stand-in for Judge Pip until the real illustration ships. Same circular
-/// silhouette so the swap is a one-line change — replace this widget's body
-/// with `Image.asset('assets/pip_triumph.png', width: 56, height: 56)` (and
-/// `pip_listening.png` when `quiet` is true).
-class _PipStub extends StatelessWidget {
-  const _PipStub({required this.quiet});
-
-  final bool quiet;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: 'The tiny judge',
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: quiet ? SettleThisColors.cream : SettleThisColors.navy,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: SettleThisColors.gavelGold,
-            width: 2,
-          ),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          '⚖', // ⚖ scales of justice — placeholder until Pip art lands
-          style: TextStyle(
-            fontSize: 28,
-            color: quiet
-                ? SettleThisColors.navyDeep
-                : SettleThisColors.gavelGold,
-          ),
-        ),
-      ),
     );
   }
 }
