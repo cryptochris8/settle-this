@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 class SettleThisColors {
   SettleThisColors._();
 
+  // Foundation palette.
   static const Color cream = Color(0xFFFBF6EC);
   static const Color creamDeep = Color(0xFFF1E9D6);
   static const Color navy = Color(0xFF1F2452);
@@ -15,6 +16,21 @@ class SettleThisColors {
   static const Color blocked = Color(0xFFB23A48);
   static const Color ink = Color(0xFF1B1B1B);
   static const Color inkSoft = Color(0xFF565B6E);
+
+  // Tinted surfaces for sectioned content. All ≥17:1 against `ink`.
+  static const Color mintCream = Color(0xFFEAF6EE);
+  static const Color warmSand = Color(0xFFFFF6E0);
+  static const Color skyCream = Color(0xFFEAF0F8);
+
+  // Semantic surfaces — purpose-named for verdict section tones.
+  static const Color surfaceGotRight = mintCream;
+  static const Color surfaceMissed = warmSand;
+  static const Color surfaceFix = skyCream;
+
+  // Semantic accents — 4px docket-tab + icon color per tone.
+  static const Color accentGotRight = success;
+  static const Color accentMissed = gavelGold;
+  static const Color accentFix = navy;
 }
 
 ThemeData buildSettleThisTheme() {
