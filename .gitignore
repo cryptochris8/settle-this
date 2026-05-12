@@ -1,0 +1,29 @@
+# OS / editor
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Node / Functions
+node_modules/
+
+# Flutter (also handled inside settle_this/.gitignore)
+**/.dart_tool/
+**/.flutter-plugins-dependencies
+**/build/
+
+# Firebase tooling
+.firebase/
+firebase-debug.log
+ui-debug.log
+
+# Local env / secrets
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Codemagic local cache
+.codemagic/
+
+# Pack artifacts
+settle_this_claude_implementation_pack.zip

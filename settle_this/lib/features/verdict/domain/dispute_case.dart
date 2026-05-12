@@ -1,0 +1,92 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../../submit_case/domain/relationship_type.dart';
+import '../../submit_case/domain/tone_mode.dart';
+import 'verdict.dart';
+import 'verdict_status.dart';
+
+class DisputeCase {
+  const DisputeCase({
+    required this.caseId,
+    required this.userId,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.status,
+    required this.relationshipType,
+    required this.tone,
+    required this.verdict,
+    required this.safety,
+    required this.containsPotentialPii,
+    required this.shareCount,
+    this.deletedAt,
+    this.userRating,
+  });
+
+  final String caseId;
+  final String userId;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final VerdictStatus status;
+  final RelationshipType relationshipType;
+  final ToneMode tone;
+  final Verdict? verdict;
+  final CaseSafety safety;
+  final bool containsPotentialPii;
+  final int shareCount;
+  final DateTime? deletedAt;
+  final String? userRating;
+
+  bool get canShare =>
+      status == VerdictStatus.completed &&
+      safety.safeForShare &&
+      verdict?.shareCard != null &&
+      !containsPotentialPii;
+
+  factory DisputeCase.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snap) {
+    final raw = snap.data() ?? const {};
+    final input = raw['input'] as Map? ?? const {};
+    final safety = raw['safety'] as Map? ?? const {};
+    final share = raw['share'] as Map? ?? const {};
+    final feedback = raw['feedback'] as Map? ?? const {};
+
+    return DisputeCase(
+      caseId: (raw['caseId'] as String?) ?? snap.id,
+      userId: (raw['userId'] as String?) ?? '',
+      createdAt: _toDate(raw['createdAt']),
+      updatedAt: _toDate(raw['updatedAt']),
+      status: VerdictStatus.fromWire(raw['status']),
+      relationshipType: _relationshipFrom(raw['relationshipType']),
+      tone: _toneFrom(raw['tone']),
+      verdict: raw['verdict'] is Map
+          ? Verdict.fromJson(raw['verdict'] as Map)
+          : null,
+      safety: CaseSafety.fromJson(safety),
+      containsPotentialPii: input['containsPotentialPII'] as bool? ?? false,
+      shareCount: (share['shareCount'] as num?)?.toInt() ?? 0,
+      deletedAt: _toDate(raw['deletedAt']),
+      userRating: feedback['userRating'] as String?,
+    );
+  }
+
+  static RelationshipType _relationshipFrom(Object? value) {
+    final s = value?.toString();
+    return RelationshipType.values.firstWhere(
+      (r) => r.wireValue == s,
+      orElse: () => RelationshipType.other,
+    );
+  }
+
+  static ToneMode _toneFrom(Object? value) {
+    final s = value?.toString();
+    return ToneMode.values.firstWhere(
+      (t) => t.wireValue == s,
+      orElse: () => ToneMode.balancedReferee,
+    );
+  }
+
+  static DateTime? _toDate(Object? value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    return null;
+  }
+}

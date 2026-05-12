@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "settle-this-dev",
+    "dev": "settle-this-dev",
+    "prod": "settle-this-prod"
+  }
+}

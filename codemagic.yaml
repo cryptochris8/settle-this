@@ -1,0 +1,74 @@
+workflows:
+  ios-testflight:
+    name: iOS — TestFlight build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: codemagic
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.athletedomains.settleThis
+      vars:
+        APP_STORE_APPLE_ID: ""            # fill in App Store Connect numeric ID
+        BUNDLE_ID: com.athletedomains.settleThis
+        REVENUECAT_API_KEY: ""            # leave empty until RevenueCat is configured
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Set up code signing
+        script: keychain initialize
+      - name: Fetch signing files
+        script: |
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+      - name: Use signing certs
+        script: keychain add-certificates
+      - name: Apply provisioning profiles
+        script: xcode-project use-profiles
+      - name: Resolve Flutter deps
+        working_directory: settle_this
+        script: flutter pub get
+      - name: Pod install
+        working_directory: settle_this/ios
+        script: pod install
+      - name: Increment build number
+        working_directory: settle_this
+        script: |
+          BUILD_NUMBER=$(($(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID") + 1))
+          flutter build ipa --release \
+            --build-number=$BUILD_NUMBER \
+            --dart-define=REVENUECAT_API_KEY="$REVENUECAT_API_KEY" \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - settle_this/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
+
+  android-debug:
+    name: Android — debug APK
+    max_build_duration: 45
+    instance_type: linux_x2
+    environment:
+      vars:
+        REVENUECAT_API_KEY: ""
+      flutter: stable
+    scripts:
+      - name: Resolve Flutter deps
+        working_directory: settle_this
+        script: flutter pub get
+      - name: Build debug APK
+        working_directory: settle_this
+        script: |
+          flutter build apk --debug \
+            --dart-define=REVENUECAT_API_KEY="$REVENUECAT_API_KEY"
+    artifacts:
+      - settle_this/build/app/outputs/apk/debug/*.apk

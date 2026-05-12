@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "445204057855",
+    "project_id": "settle-this-dev",
+    "storage_bucket": "settle-this-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445204057855:android:7cc99e39801843d78386ca",
+        "android_client_info": {
+          "package_name": "com.athletedomains.settle_this"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKqSy-0ro_zWItQozfUo-33krtr8geHD4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

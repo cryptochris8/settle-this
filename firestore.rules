@@ -1,0 +1,80 @@
+rules_version = '2';
+
+// Settle This — Firestore security rules.
+// Hardened per the pre-Phase-0 security review:
+//   F1.3 — users/{uid} update uses an allowlist (was a denylist).
+//   F1.4 — feedback validates shape, length, ownership, and rating enum.
+//   F1.5 — appConfig requires sign-in to read.
+//   General — All AI verdicts are written by Cloud Functions only.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).changedKeys();
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId)
+        && changedKeys().hasOnly([
+          'displayName',
+          'lastActiveAt',
+          'settings',
+          'ageVerifiedAt',
+          'acceptedDisclaimerVersion',
+          'acceptedDisclaimerAt',
+        ]);
+      allow delete: if isOwner(userId);
+
+      match /cases/{caseId} {
+        allow read: if isOwner(userId);
+        allow create: if false; // only Cloud Functions create cases
+        allow update: if isOwner(userId)
+          && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+            'feedback', 'share', 'updatedAt', 'deletedAt'
+          ]);
+        allow delete: if isOwner(userId);
+      }
+
+      match /usage/{dateKey} {
+        allow read: if isOwner(userId);
+        allow write: if false; // backend only
+      }
+    }
+
+    match /feedback/{feedbackId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.rating in ['thumbs_up', 'thumbs_down']
+        && request.resource.data.caseId is string
+        && request.resource.data.caseId.size() <= 64
+        && (!('freeText' in request.resource.data)
+            || request.resource.data.freeText == null
+            || (request.resource.data.freeText is string
+                && request.resource.data.freeText.size() <= 1000));
+      allow read, update, delete: if false;
+    }
+
+    match /appConfig/{docId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /moderationLogs/{logId} {
+      allow read, write: if false;
+    }
+
+    match /processedEvents/{eventId} {
+      allow read, write: if false;
+    }
+  }
+}
