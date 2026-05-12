@@ -5,12 +5,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
-import '../../../shared/widgets/verdict_badge.dart';
 import '../../history/data/history_repository.dart';
 import '../domain/dispute_case.dart';
 import '../domain/verdict.dart';
 import '../domain/verdict_status.dart';
 import 'verdict_card_widget.dart';
+import 'verdict_hero.dart';
 
 class VerdictResultScreen extends ConsumerWidget {
   const VerdictResultScreen({required this.caseId, super.key});
@@ -69,16 +69,12 @@ class _VerdictBody extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (!isSoftRedirect) VerdictBadge(who: verdict.whoWasMoreRight),
-          if (!isSoftRedirect) const SizedBox(height: 16),
-          Text(
-            verdict.title,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: SettleThisColors.navyDeep,
-                ),
+          VerdictHero(
+            title: verdict.title,
+            who: verdict.whoWasMoreRight,
+            isSoftRedirect: isSoftRedirect,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Text(
             verdict.summaryVerdict,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
@@ -101,7 +97,7 @@ class _VerdictBody extends ConsumerWidget {
               icon: Icons.handshake_outlined,
               tone: VerdictSectionTone.gotRight,
             ),
-            const SizedBox(height: 8),
+            const DocketDivider(),
           ],
           VerdictSection(
             title: 'What was missed',
