@@ -4,42 +4,31 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
-      app_store_connect: Pregame        # shared ASC API integration used by all athlete-domains apps
+      app_store_connect: Pregame        # shared ASC API integration for all athlete-domains apps
     environment:
       groups:
-        - smash                         # shared group containing CERTIFICATE_PRIVATE_KEY (Apple team Q3UH3Y4QUU)
-      # NB: no legacy `ios_signing:` block. The scripts below auto-create the
-      # cert+profile via `app-store-connect fetch-signing-files --create`.
-      # See ~/.claude memory: feedback_codemagic_signing_pattern.md.
+        - apple_developer               # team-level group with the shared ASC API key vars
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.athletedomains.settleThis
       vars:
         APP_STORE_APPLE_ID: "6768496159"
         BUNDLE_ID: com.athletedomains.settleThis
         APPLE_TEAM_ID: Q3UH3Y4QUU
-        # REVENUECAT_API_KEY intentionally not declared — passed as empty literal
-        # to flutter build below. Add as a Codemagic secret variable once
-        # RevenueCat is configured.
+        # REVENUECAT_API_KEY left undeclared — passed as empty literal to
+        # flutter build below. Add as a Codemagic secret env var when
+        # RevenueCat is wired.
       flutter: stable
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Set up code signing
-        script: keychain initialize
-      - name: Fetch signing files
-        script: |
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --create
-      - name: Use signing certs
-        script: keychain add-certificates
-      - name: Apply provisioning profiles
-        script: xcode-project use-profiles
       - name: Resolve Flutter deps
         working_directory: settle_this
         script: flutter pub get
       - name: Pod install
         working_directory: settle_this/ios
         script: pod install
-      - name: Increment build number
+      - name: Increment build number + build IPA
         working_directory: settle_this
         script: |
           BUILD_NUMBER=$(($(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID") + 1))
