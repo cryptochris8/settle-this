@@ -8,9 +8,9 @@ workflows:
     environment:
       groups:
         - smash                         # shared group containing CERTIFICATE_PRIVATE_KEY (Apple team Q3UH3Y4QUU)
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.athletedomains.settleThis
+      # NB: no legacy `ios_signing:` block. The scripts below auto-create the
+      # cert+profile via `app-store-connect fetch-signing-files --create`.
+      # See ~/.claude memory: feedback_codemagic_signing_pattern.md.
       vars:
         APP_STORE_APPLE_ID: "6768496159"
         BUNDLE_ID: com.athletedomains.settleThis
