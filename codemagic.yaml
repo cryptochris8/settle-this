@@ -38,9 +38,20 @@ workflows:
       - name: Increment build number + build IPA
         working_directory: settle_this
         script: |
-          BUILD_NUMBER=$(($(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID") + 1))
+          # Pick the highest of: (ASC last build + 1) or Codemagic's auto-
+          # incrementing $BUILD_NUMBER. Falling back to either alone has
+          # bitten us — the ASC API sometimes returns empty during build-
+          # propagation, and Codemagic's counter can lag if the project was
+          # rebuilt. Taking the max never collides with TestFlight.
+          ASC_LATEST=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo "0")
+          ASC_LATEST=${ASC_LATEST:-0}
+          NEXT=$((ASC_LATEST + 1))
+          if [ "${BUILD_NUMBER:-0}" -gt "$NEXT" ]; then
+            NEXT=$BUILD_NUMBER
+          fi
+          echo "Using build-number=$NEXT (asc=$ASC_LATEST, codemagic=$BUILD_NUMBER)"
           flutter build ipa --release \
-            --build-number=$BUILD_NUMBER \
+            --build-number=$NEXT \
             --dart-define=REVENUECAT_API_KEY="${REVENUECAT_API_KEY:-}" \
             --export-options-plist=/Users/builder/export_options.plist
     artifacts:
