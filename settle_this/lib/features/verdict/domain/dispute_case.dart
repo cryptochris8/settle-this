@@ -18,6 +18,9 @@ class DisputeCase {
     required this.safety,
     required this.containsPotentialPii,
     required this.shareCount,
+    this.scenarioSanitized = '',
+    this.sideASanitized,
+    this.sideBSanitized,
     this.deletedAt,
     this.userRating,
   });
@@ -33,6 +36,11 @@ class DisputeCase {
   final CaseSafety safety;
   final bool containsPotentialPii;
   final int shareCount;
+  /// Sanitized scenario text (PII redacted server-side). Empty for older
+  /// cases written before this field landed.
+  final String scenarioSanitized;
+  final String? sideASanitized;
+  final String? sideBSanitized;
   final DateTime? deletedAt;
   final String? userRating;
 
@@ -62,6 +70,9 @@ class DisputeCase {
           : null,
       safety: CaseSafety.fromJson(safety),
       containsPotentialPii: input['containsPotentialPII'] as bool? ?? false,
+      scenarioSanitized: (input['scenarioSanitized'] as String?) ?? '',
+      sideASanitized: input['sideASanitized'] as String?,
+      sideBSanitized: input['sideBSanitized'] as String?,
       shareCount: (share['shareCount'] as num?)?.toInt() ?? 0,
       deletedAt: _toDate(raw['deletedAt']),
       userRating: feedback['userRating'] as String?,

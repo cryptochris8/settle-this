@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../history/data/history_repository.dart';
+import '../../submit_case/application/submit_case_form.dart';
+import '../../submit_case/domain/tone_mode.dart';
 import '../domain/dispute_case.dart';
 import '../domain/verdict.dart';
 import '../domain/verdict_status.dart';
@@ -144,8 +146,36 @@ class _ActionRow extends ConsumerWidget {
 
   final DisputeCase dispute;
 
+  Future<void> _tryAnotherTone(BuildContext context, WidgetRef ref) async {
+    final notifier = ref.read(submitCaseFormProvider.notifier);
+    // Prefill the form with this case's scenario, sides, relationship.
+    // Note: scenarioSanitized has PII redacted server-side — that's the
+    // version we want to re-submit anyway.
+    notifier
+      ..setScenario(dispute.scenarioSanitized)
+      ..setSideA(dispute.sideASanitized)
+      ..setSideB(dispute.sideBSanitized)
+      ..setRelationship(dispute.relationshipType)
+      // Default highlight on a different tone so the picker doesn't open
+      // on the one the user just used.
+      ..setTone(_alternateTone(dispute.tone))
+      ..setSaveCase(true);
+    if (!context.mounted) return;
+    context.push(AppRoutes.submitTone);
+  }
+
+  /// Rotates to a sibling tone so the user lands on the tone screen with a
+  /// fresh default — they still see all three and can pick whichever, but
+  /// the highlighted choice is no longer the one they just used.
+  static ToneMode _alternateTone(ToneMode current) {
+    final values = ToneMode.values;
+    final i = values.indexOf(current);
+    return values[(i + 1) % values.length];
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isCompleted = dispute.status == VerdictStatus.completed;
     return Wrap(
       spacing: 12,
       runSpacing: 12,
@@ -157,10 +187,19 @@ class _ActionRow extends ConsumerWidget {
             onPressed: () =>
                 context.push('/verdict/${dispute.caseId}/share-card'),
           ),
+        if (isCompleted)
+          ElevatedButton.icon(
+            icon: const Icon(Icons.theater_comedy_outlined),
+            label: const Text('Try Another Tone'),
+            onPressed: () => _tryAnotherTone(context, ref),
+          ),
         ElevatedButton.icon(
           icon: const Icon(Icons.refresh),
           label: const Text('Settle Another'),
-          onPressed: () => context.go(AppRoutes.submit),
+          onPressed: () {
+            ref.read(submitCaseFormProvider.notifier).reset();
+            context.go(AppRoutes.submit);
+          },
         ),
       ],
     );
