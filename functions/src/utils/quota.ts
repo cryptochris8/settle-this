@@ -9,10 +9,13 @@ export interface QuotaPolicy {
   anonymousLifetimeCap: number;
 }
 
+// TODO(launch): revert to {free: 3, anon: 2} before public launch. These are
+// loose limits for in-dev iteration so the user can test prompts/UI without
+// hitting quota every few minutes. paidDailySoftCap stays put.
 export const DEFAULT_QUOTA: QuotaPolicy = {
-  freeVerdictsPerDay: 3,
+  freeVerdictsPerDay: 20,
   paidDailySoftCap: 100,
-  anonymousLifetimeCap: 2,
+  anonymousLifetimeCap: 50,
 };
 
 interface ReserveArgs {
