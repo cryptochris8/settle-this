@@ -2,37 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme.dart';
+import '../../../shared/widgets/judge_pip.dart';
 import '../data/onboarding_repository.dart';
 
 class _OnboardingPage {
   const _OnboardingPage({
     required this.title,
     required this.body,
-    required this.icon,
+    this.quiet = false,
   });
 
   final String title;
   final String body;
-  final IconData icon;
+
+  /// When true, render the calmer Pip Listening variant — used for the
+  /// "serious topics" page so the energy matches the message.
+  final bool quiet;
 }
 
 const List<_OnboardingPage> _pages = [
   _OnboardingPage(
-    icon: Icons.gavel_rounded,
     title: 'Settle silly arguments without starting a bigger one.',
     body:
         'Get a funny, fair AI verdict for everyday disagreements — laundry, '
         'pets, chores, leftovers, texting, and all the tiny chaos of real life.',
   ),
   _OnboardingPage(
-    icon: Icons.balance,
     title: 'A referee, not a therapist.',
     body:
         'Settle This is for low-stakes everyday disagreements. It gives '
         'perspective, a practical next step, and a little humor.',
   ),
   _OnboardingPage(
-    icon: Icons.shield_moon_outlined,
+    quiet: true,
     title: 'Some things deserve real help.',
     body:
         'This app does not provide therapy, legal, medical, emergency, or '
@@ -71,6 +73,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
+  Future<void> _skip() async {
+    await ref.read(onboardingProvider.notifier).completeOnboarding();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -78,6 +84,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: TextButton(
+                  onPressed: _skip,
+                  child: const Text('Skip'),
+                ),
+              ),
+            ),
             Expanded(
               child: PageView.builder(
                 controller: _controller,
@@ -91,18 +107,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Icon(
-                          page.icon,
-                          size: 88,
-                          color: SettleThisColors.gavelGold,
-                        ),
-                        const SizedBox(height: 32),
+                        Center(child: JudgePip(size: 120, quiet: page.quiet)),
+                        const SizedBox(height: 36),
                         Text(
                           page.title,
                           textAlign: TextAlign.center,
                           style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w900,
                             color: SettleThisColors.navyDeep,
+                            height: 1.2,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -128,7 +141,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: _next,
-                  child: Text(_isLastPage ? 'Continue' : 'Next'),
+                  child: Text(_isLastPage ? "Let's settle something" : 'Next'),
                 ),
               ),
             ),
