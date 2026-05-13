@@ -8,8 +8,7 @@ import '../../../shared/widgets/judge_pip.dart';
 import '../../history/data/history_repository.dart';
 import '../../verdict/domain/dispute_case.dart';
 import '../../verdict/presentation/verdict_card_widget.dart';
-
-const int _kFreeVerdictsPerDay = 3;
+import '../data/usage_repository.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -58,10 +57,9 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Center(
-                child: _UsageChip(
-                  used: 0,
-                  total: _kFreeVerdictsPerDay,
+              Center(
+                child: _LiveUsageChip(
+                  usageAsync: ref.watch(userUsageProvider),
                 ),
               ),
               const SizedBox(height: 24),
@@ -109,22 +107,55 @@ class _HostBlock extends StatelessWidget {
   }
 }
 
+/// Live wrapper around [_UsageChip] that reads the [userUsageProvider]
+/// async value and chooses the right surface state.
+class _LiveUsageChip extends StatelessWidget {
+  const _LiveUsageChip({required this.usageAsync});
+
+  final AsyncValue<UserUsage> usageAsync;
+
+  @override
+  Widget build(BuildContext context) {
+    // During loading or on error, fall back to an optimistic offline view
+    // rather than a spinner — the chip is a glance-able accent, not the
+    // main event.
+    final usage = usageAsync.maybeWhen(
+      data: (u) => u,
+      orElse: () => UserUsage.offline,
+    );
+    return _UsageChip(usage: usage);
+  }
+}
+
 class _UsageChip extends StatelessWidget {
-  const _UsageChip({required this.used, required this.total});
+  const _UsageChip({required this.usage});
 
-  final int used;
-  final int total;
-
-  int get _remaining => (total - used).clamp(0, total);
+  final UserUsage usage;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final out = _remaining == 0;
+    final isPaid = usage.isPaid;
+    final out = usage.isOutOfFree;
     final color = out ? SettleThisColors.coral : SettleThisColors.gavelGold;
-    final label = out
-        ? 'Out of free verdicts — courtroom reopens tomorrow'
-        : '$_remaining of $total free verdicts left today';
+
+    final String label;
+    final IconData icon;
+    if (isPaid) {
+      label = 'Settle This Plus · unlimited today';
+      icon = Icons.workspace_premium;
+    } else if (out) {
+      label = 'Out of free verdicts — courtroom reopens tomorrow';
+      icon = Icons.lock_clock;
+    } else {
+      label =
+          '${usage.remainingFreeVerdicts} of ${usage.freeVerdictsPerDay} free verdicts left today';
+      icon = Icons.bolt;
+    }
+
+    // Dots only when the daily total is small enough to read at a glance.
+    final showDots = !isPaid && !out && usage.freeVerdictsPerDay <= 5;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
@@ -135,18 +166,23 @@ class _UsageChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(out ? Icons.lock_clock : Icons.bolt, size: 16, color: color),
+          Icon(icon, size: 16, color: color),
           const SizedBox(width: 8),
-          Text(
-            label,
-            style: theme.textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: SettleThisColors.navyDeep,
+          Flexible(
+            child: Text(
+              label,
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: SettleThisColors.navyDeep,
+              ),
             ),
           ),
-          if (!out) ...[
+          if (showDots) ...[
             const SizedBox(width: 8),
-            _UsageDots(used: used, total: total),
+            _UsageDots(
+              used: usage.freeVerdictsUsed,
+              total: usage.freeVerdictsPerDay,
+            ),
           ],
         ],
       ),

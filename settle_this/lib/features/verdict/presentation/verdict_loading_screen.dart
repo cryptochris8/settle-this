@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../shared/widgets/judge_pip.dart';
+import '../../home/data/usage_repository.dart';
 import '../../submit_case/application/submit_case_form.dart';
 import '../../submit_case/data/verdict_repository.dart';
 
@@ -63,10 +64,16 @@ class _VerdictLoadingScreenState extends ConsumerState<VerdictLoadingScreen>
           await ref.read(verdictRepositoryProvider).createVerdict(input);
       if (!mounted) return;
       ref.read(submitCaseFormProvider.notifier).reset();
+      // Force the usage counter on /home to re-fetch — a verdict was just
+      // spent. Next time the user lands on home, the chip reflects reality.
+      ref.invalidate(userUsageProvider);
       context.go('/verdict/${response.caseId}');
     } on VerdictException catch (e) {
       if (!mounted) return;
       if (e.code == 'resource-exhausted') {
+        // Out of quota — refresh the home counter so it shows "out" next
+        // time too, and route to the usage limit screen.
+        ref.invalidate(userUsageProvider);
         context.go(AppRoutes.usageLimit);
         return;
       }
