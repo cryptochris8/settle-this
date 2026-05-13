@@ -6,6 +6,7 @@ import '../../../app/constants.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/utils/pii_detector.dart';
+import '../../../shared/widgets/wizard_steps.dart';
 import '../application/submit_case_form.dart';
 import '../domain/relationship_type.dart';
 
@@ -39,13 +40,19 @@ class _SubmitCaseScreenState extends ConsumerState<SubmitCaseScreen> {
     final findings = PiiDetector.findings(form.scenario);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Tell us what happened')),
+      appBar: AppBar(title: const Text('Settle Something')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const WizardSteps(
+                currentStep: 1,
+                totalSteps: 4,
+                label: 'Tell us what happened',
+              ),
+              const SizedBox(height: 18),
               Text(
                 'Keep it clear, honest, and low-stakes. Avoid full names, '
                 'addresses, workplaces, or private identifying details.',

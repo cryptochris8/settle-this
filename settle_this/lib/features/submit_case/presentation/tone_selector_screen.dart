@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../shared/widgets/wizard_steps.dart';
 import '../application/submit_case_form.dart';
 import '../domain/tone_mode.dart';
 
@@ -23,13 +24,19 @@ class ToneSelectorScreen extends ConsumerWidget {
     final notifier = ref.read(submitCaseFormProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Choose the vibe')),
+      appBar: AppBar(title: const Text('Settle Something')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const WizardSteps(
+                currentStep: 3,
+                totalSteps: 4,
+                label: 'Choose the vibe',
+              ),
+              const SizedBox(height: 12),
               Text(
                 'Pick how the referee should rule.',
                 style: theme.textTheme.bodyMedium?.copyWith(

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/constants.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../shared/widgets/wizard_steps.dart';
 import '../application/submit_case_form.dart';
 
 class SideInputScreen extends ConsumerStatefulWidget {
@@ -40,13 +41,19 @@ class _SideInputScreenState extends ConsumerState<SideInputScreen> {
     final notifier = ref.read(submitCaseFormProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Both sides')),
+      appBar: AppBar(title: const Text('Settle Something')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const WizardSteps(
+                currentStep: 2,
+                totalSteps: 4,
+                label: 'Both sides',
+              ),
+              const SizedBox(height: 18),
               Text(
                 'Optional. If each side has a slightly different version, '
                 'capture both — the referee weighs them separately.',

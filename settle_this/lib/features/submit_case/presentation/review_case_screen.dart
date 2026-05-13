@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../shared/widgets/wizard_steps.dart';
 import '../application/submit_case_form.dart';
 
 class ReviewCaseScreen extends ConsumerWidget {
@@ -15,13 +16,19 @@ class ReviewCaseScreen extends ConsumerWidget {
     final form = ref.watch(submitCaseFormProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Review')),
+      appBar: AppBar(title: const Text('Settle Something')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const WizardSteps(
+                currentStep: 4,
+                totalSteps: 4,
+                label: 'Review and settle',
+              ),
+              const SizedBox(height: 12),
               Text(
                 'One last look before the gavel comes down.',
                 style: theme.textTheme.bodyMedium?.copyWith(
