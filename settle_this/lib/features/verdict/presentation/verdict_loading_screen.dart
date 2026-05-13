@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../shared/widgets/judge_pip.dart';
 import '../../submit_case/application/submit_case_form.dart';
 import '../../submit_case/data/verdict_repository.dart';
 
@@ -127,14 +128,32 @@ class _LoadingBody extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Spacer(),
+        // Pip "thinking" stage. Gentle rocking + a soft halo behind the
+        // character. Real Pip art (kArtReady=true) renders the commissioned
+        // illustration; until then the stub fills the same circle. Either
+        // way, the parent rocks the whole composition.
         RotationTransition(
-          turns: Tween<double>(begin: -0.05, end: 0.05).animate(
+          turns: Tween<double>(begin: -0.04, end: 0.04).animate(
             CurvedAnimation(parent: controller, curve: Curves.easeInOut),
           ),
-          child: const Icon(
-            Icons.gavel,
-            size: 96,
-            color: SettleThisColors.gavelGold,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 140,
+                height: 140,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      SettleThisColors.gavelGold.withValues(alpha: 0.22),
+                      SettleThisColors.gavelGold.withValues(alpha: 0),
+                    ],
+                  ),
+                ),
+              ),
+              const JudgePip(size: 96),
+            ],
           ),
         ),
         const SizedBox(height: 32),
