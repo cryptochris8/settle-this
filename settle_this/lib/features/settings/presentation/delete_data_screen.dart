@@ -76,26 +76,30 @@ class _DeleteDataScreenState extends ConsumerState<DeleteDataScreen> {
     if (!ok) return;
     setState(() => _busy = true);
 
-    String? error;
+    var failed = false;
     try {
       if (Firebase.apps.isEmpty) {
-        throw Exception(
-          'Backend is not configured yet — finish flutterfire configure first.',
-        );
+        failed = true;
+      } else {
+        final functions =
+            FirebaseFunctions.instanceFor(region: 'us-central1');
+        await functions
+            .httpsCallable('deleteAccount')
+            .call<Map<Object?, Object?>>(<String, Object?>{});
+        await ref.read(authRepositoryProvider).signOut();
       }
-      final functions = FirebaseFunctions.instanceFor(region: 'us-central1');
-      await functions
-          .httpsCallable('deleteAccount')
-          .call<Map<Object?, Object?>>(<String, Object?>{});
-      await ref.read(authRepositoryProvider).signOut();
-    } catch (e) {
-      error = e.toString();
+    } catch (_) {
+      failed = true;
     }
     if (!mounted) return;
     setState(() => _busy = false);
-    if (error != null) {
+    if (failed) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not delete account: $error')),
+        const SnackBar(
+          content: Text(
+            "Couldn't delete your account. Check your connection and try again.",
+          ),
+        ),
       );
       return;
     }

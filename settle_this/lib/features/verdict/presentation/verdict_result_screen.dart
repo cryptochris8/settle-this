@@ -34,7 +34,9 @@ class VerdictResultScreen extends ConsumerWidget {
       ),
       body: caseAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => _ErrorState(message: e.toString()),
+        error: (_, _) => const _ErrorState(
+          message: "We couldn't load that verdict. Check your connection and try again.",
+        ),
         data: (dispute) {
           if (dispute == null) {
             return const _ErrorState(
@@ -240,11 +242,11 @@ class _FeedbackBlockState extends ConsumerState<_FeedbackBlock> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Thanks for the feedback.')),
       );
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() => _submitted = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not save feedback: $e')),
+        const SnackBar(content: Text("Couldn't save feedback. Try again in a moment.")),
       );
     }
   }

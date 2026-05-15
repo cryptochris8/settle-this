@@ -78,9 +78,9 @@ class _VerdictLoadingScreenState extends ConsumerState<VerdictLoadingScreen>
         return;
       }
       setState(() => _error = e.message);
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
-      setState(() => _error = 'Something went sideways: $e');
+      setState(() => _error = "Something went sideways. Let's try that again.");
     }
   }
 
