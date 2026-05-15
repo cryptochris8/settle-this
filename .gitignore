@@ -20,7 +20,12 @@ ui-debug.log
 # Local env / secrets
 **/.env
 **/.env.local
+**/.env.local.txt
 **/.env.*.local
+**/.env.*.local.txt
+
+# Recraft draft outputs (Pip mascot iteration, never committed)
+**/_recraft_drafts/
 
 # Codemagic local cache
 .codemagic/
