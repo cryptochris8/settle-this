@@ -6,8 +6,7 @@ import { toHttpsError } from '../utils/errors';
 import { DEFAULT_QUOTA } from '../utils/quota';
 
 export const getUserUsage = onCall(
-  // TODO(launch): enforceAppCheck: true after App Check is wired (F1.1).
-  { region: 'us-central1', enforceAppCheck: false },
+  { region: 'us-central1', enforceAppCheck: true },
   async (request) => {
     try {
       const auth = requireAuth(request);

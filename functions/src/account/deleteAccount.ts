@@ -15,8 +15,7 @@ import { toHttpsError } from '../utils/errors';
 export const deleteAccount = onCall(
   {
     region: 'us-central1',
-    // TODO(launch): enforceAppCheck: true after App Check is wired (F1.1).
-    enforceAppCheck: false,
+    enforceAppCheck: true,
     memory: '512MiB',
     timeoutSeconds: 120,
   },

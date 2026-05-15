@@ -10,10 +10,12 @@ import '../domain/verdict.dart';
 class ShareCardWidget extends StatelessWidget {
   const ShareCardWidget({
     required this.shareCard,
+    required this.domain,
     super.key,
   });
 
   final ShareCardData shareCard;
+  final String domain;
 
   static const double cardWidth = 1080;
   static const double cardHeight = 1350;
@@ -70,7 +72,7 @@ class ShareCardWidget extends StatelessWidget {
               const Spacer(),
               _RulingPanel(text: shareCard.shortRuling),
               const SizedBox(height: 32),
-              const _CardFooter(),
+              _CardFooter(domain: domain),
             ],
           ),
         ),
@@ -224,7 +226,9 @@ class _RulingPanel extends StatelessWidget {
 }
 
 class _CardFooter extends StatelessWidget {
-  const _CardFooter();
+  const _CardFooter({required this.domain});
+
+  final String domain;
 
   @override
   Widget build(BuildContext context) {
@@ -246,8 +250,7 @@ class _CardFooter extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              // TODO(launch): replace with real domain once registered.
-              'settlethis.app',
+              domain,
               style: TextStyle(
                 fontFamily: 'Nunito',
                 fontSize: 22,

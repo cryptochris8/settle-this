@@ -23,10 +23,7 @@ import { reserveVerdictSlot } from '../utils/quota';
 export const createVerdict = onCall(
   {
     region: 'us-central1',
-    // TODO(launch): flip to `true` once Firebase App Check is wired in the
-    // Flutter client (DeviceCheck on iOS, Play Integrity on Android).
-    // Security finding F1.1.
-    enforceAppCheck: false,
+    enforceAppCheck: true,
     secrets: [OPENAI_API_KEY],
     memory: '512MiB',
     timeoutSeconds: 60,

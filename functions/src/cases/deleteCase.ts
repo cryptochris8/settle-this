@@ -11,8 +11,7 @@ const DeleteCaseInputSchema = z.object({
 });
 
 export const deleteCase = onCall(
-  // TODO(launch): enforceAppCheck: true after App Check is wired (F1.1).
-  { region: 'us-central1', enforceAppCheck: false },
+  { region: 'us-central1', enforceAppCheck: true },
   async (request) => {
     try {
       const auth = requireAuth(request);

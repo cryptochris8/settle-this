@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../core/services/remote_config_service.dart';
 import '../../../core/services/share_service.dart';
 import '../../history/data/history_repository.dart';
 import '../domain/dispute_case.dart';
@@ -62,6 +63,7 @@ class _ShareCardPreviewScreenState
             dispute: dispute,
             boundaryKey: _boundaryKey,
             busy: _busy,
+            domain: ref.read(remoteConfigServiceProvider).shareCardDomain,
             onShare: () => _share(dispute),
           );
         },
@@ -75,12 +77,14 @@ class _PreviewBody extends StatelessWidget {
     required this.dispute,
     required this.boundaryKey,
     required this.busy,
+    required this.domain,
     required this.onShare,
   });
 
   final DisputeCase dispute;
   final GlobalKey boundaryKey;
   final bool busy;
+  final String domain;
   final VoidCallback onShare;
 
   @override
@@ -99,7 +103,10 @@ class _PreviewBody extends StatelessWidget {
                 fit: BoxFit.cover,
                 child: RepaintBoundary(
                   key: boundaryKey,
-                  child: ShareCardWidget(shareCard: shareCard),
+                  child: ShareCardWidget(
+                    shareCard: shareCard,
+                    domain: domain,
+                  ),
                 ),
               ),
             ),
