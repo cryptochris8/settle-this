@@ -35,7 +35,7 @@ class JudgePip extends StatelessWidget {
 
   /// Set to `true` after dropping commissioned art into `assets/pip/` and
   /// declaring the files in `pubspec.yaml`. Until then the stub renders.
-  static const bool kArtReady = false;
+  static const bool kArtReady = true;
 
   String get _assetPath => quiet
       ? 'assets/pip/pip_listening.png'

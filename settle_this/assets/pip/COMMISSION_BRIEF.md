@@ -1,5 +1,16 @@
 # Judge Pip — Commission Brief
 
+**Status (2026-05-16):** Pip art has shipped from a Recraft generation pass —
+`pip_triumph.png` and `pip_listening.png` are live in `assets/pip/` (plus
+`2.0x/` and `3.0x/` for resolution-aware variants) and the `kArtReady` flag
+in `lib/shared/widgets/judge_pip.dart` is on. The shipped Pip is brown plumage
+with soft outlines and a wooden-handle gavel — a deliberate divergence from
+the flat-vector / locked-palette spec below. Keep this brief intact for
+posterity (and as a starting point if we later commission a strict-spec
+version).
+
+---
+
 This brief is what you hand to a Fiverr illustrator, paste into Midjourney /
 DALL-E / Procreate, or pass to your own designer. The end product is a small
 suite of files that drop into `settle_this/assets/pip/` and instantly become
