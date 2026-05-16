@@ -32,3 +32,6 @@ ui-debug.log
 
 # Pack artifacts
 settle_this_claude_implementation_pack.zip
+
+# Claude Code local runtime state
+.claude/scheduled_tasks.lock
