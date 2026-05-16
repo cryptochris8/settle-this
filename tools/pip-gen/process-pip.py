@@ -26,7 +26,7 @@ ASSETS_DIR = PROJECT_ROOT / "settle_this" / "assets" / "pip"
 DRAFTS_DIR = ASSETS_DIR / "_recraft_drafts"
 
 TRIUMPH_SRC = DRAFTS_DIR / "triumph_2026-05-14T02-35-08_2.png"
-LISTENING_SRC = DRAFTS_DIR / "listening_2026-05-14T02-35-08_2.png"
+LISTENING_SRC = DRAFTS_DIR / "listening_2026-05-16T06-43-40_2.png"
 
 # Triumph: mask everything below this y that isn't part of Pip's main blob.
 TRIUMPH_PROP_Y_THRESHOLD = 780

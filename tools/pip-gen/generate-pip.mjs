@@ -26,13 +26,12 @@ const POSES = {
   listening: {
     label: 'Pip Listening',
     prompt: [
-      'Plush stout owl mascot. Deep navy judge robe with cream Peter Pan collar.',
-      'Golden gavel set down on a tiny wood block beside the character, not held. Both wings folded gently over the body. Soft eyebrows, head tilted in an empathetic listening pose. Calm gentle expression, both eyes open same size, no wink.',
-      'Round symmetrical eyes, navy iris on cream sclera, small white highlight. Small golden triangular beak. Soft coral cheek blush.',
-      'Body ratio 1:1 head-to-body, dome head into oval body. Robe trapezoid conceals the feet.',
-      'Flat vector style, solid color fill, no outlines, no shading, no gradients, no painterly texture, no realistic feathers. Soft rounded shapes. Duolingo-meets-Headspace vibe.',
-      'Palette: cream #FBF6EC, navy #1F2452, gold #E8B43C, coral #EF6F5E. No other colors.',
-      'Transparent background. Single centered character. No text.',
+      'Cute illustrated owl mascot named Pip, warm brown plumage, deep navy judge robe with cream Peter Pan collar and small gold clasp. Standing on flat ground.',
+      'POSE: Both wings folded across the chest and belly like crossed arms. Wings NEVER raised. Wings NEVER above shoulders. Wings do NOT touch the gavel.',
+      'GAVEL: A gold gavel with wooden handle lies flat on the ground in front of Pip\'s feet, resting horizontally on a small wood block. Gavel is set DOWN, never held, never raised.',
+      'Calm empathetic expression, soft eyebrows, head tilted slightly, both eyes open same size, no wink, closed beak, coral cheek blushes.',
+      'Children\'s book illustration style, soft outlines, gentle painted shading. Same character as Pip Triumphant. CALM listening variant, NOT a confident triumph pose.',
+      'Transparent background. Single character with gavel on ground in front. No text. No books. No props beyond gavel and wood block.',
     ].join(' '),
   },
 };
