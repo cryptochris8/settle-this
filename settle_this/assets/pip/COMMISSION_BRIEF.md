@@ -1,13 +1,13 @@
 # Judge Pip — Commission Brief
 
-**Status (2026-05-16):** Pip art has shipped from a Recraft generation pass —
-`pip_triumph.png` and `pip_listening.png` are live in `assets/pip/` (plus
-`2.0x/` and `3.0x/` for resolution-aware variants) and the `kArtReady` flag
-in `lib/shared/widgets/judge_pip.dart` is on. The shipped Pip is brown plumage
-with soft outlines and a wooden-handle gavel — a deliberate divergence from
-the flat-vector / locked-palette spec below. Keep this brief intact for
-posterity (and as a starting point if we later commission a strict-spec
-version).
+**Status (2026-06-07): SUPERSEDED by `PIP_CANON.md`.** Pip was redone with a
+reference-conditioning pipeline (see `PIP_CANON.md` + `tools/pip-gen/`). The
+current canon is the **flat-vector** cream/navy/gold/coral owl in 6 poses
+(triumph, gavel_down, listening, thinking, shrug, oops), all generated from one
+locked hero so they stay on-model. The earlier brown-plumage Recraft art is gone.
+This file is kept for posterity — the character bible, palette, and geometry
+below are still accurate; the *generation* guidance here (Recraft, text-to-image)
+is obsolete.
 
 ---
 

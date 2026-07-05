@@ -103,7 +103,11 @@ class _VerdictHeroState extends State<VerdictHero>
                     child: Opacity(opacity: _ctrl.value, child: child),
                   );
                 },
-                child: JudgePip(quiet: widget.isSoftRedirect),
+                child: JudgePip(
+                  pose: widget.isSoftRedirect
+                      ? PipPose.listening
+                      : PipPose.triumph,
+                ),
               ),
             ),
           ],

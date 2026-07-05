@@ -27,6 +27,10 @@ ui-debug.log
 # Recraft draft outputs (Pip mascot iteration, never committed)
 **/_recraft_drafts/
 
+# Pip v2 throwaway candidate batches (canon/pip_hero.png IS committed)
+tools/pip-gen/v2_candidates/
+**/__pycache__/
+
 # Codemagic local cache
 .codemagic/
 

@@ -107,7 +107,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Center(child: JudgePip(size: 120, quiet: page.quiet)),
+                        Center(
+                          child: JudgePip(
+                            size: 120,
+                            pose: page.quiet
+                                ? PipPose.listening
+                                : PipPose.triumph,
+                          ),
+                        ),
                         const SizedBox(height: 36),
                         Text(
                           page.title,
