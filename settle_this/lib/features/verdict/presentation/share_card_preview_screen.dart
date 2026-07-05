@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../../core/services/remote_config_service.dart';
 import '../../../core/services/share_service.dart';
 import '../../history/data/history_repository.dart';
@@ -38,6 +41,7 @@ class _ShareCardPreviewScreenState
         boundaryKey: _boundaryKey,
         text: text,
       );
+      unawaited(ref.read(analyticsServiceProvider).verdictShared());
     } finally {
       if (mounted) setState(() => _busy = false);
     }

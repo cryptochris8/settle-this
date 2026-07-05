@@ -79,6 +79,47 @@ class DisputeCase {
     );
   }
 
+  /// A client-only, non-persisted case built from the inline verdict that
+  /// `createVerdict` returns. Used for the "Save to history" = off path, where
+  /// nothing is written to Firestore and re-reading by caseId would fail.
+  ///
+  /// `safeForShare` is derived from the presence of a share card: the server
+  /// only emits a non-null shareCard when the case is fully share-safe (low
+  /// risk, no PII, completed), so `canShare` stays correct without a stored
+  /// safety document.
+  factory DisputeCase.ephemeral({
+    required VerdictResponse response,
+    required String scenario,
+    String? sideA,
+    String? sideB,
+    required RelationshipType relationshipType,
+    required ToneMode tone,
+  }) {
+    final now = DateTime.now();
+    final verdict = response.verdict;
+    return DisputeCase(
+      caseId: response.caseId,
+      userId: '',
+      createdAt: now,
+      updatedAt: now,
+      status: response.status,
+      relationshipType: relationshipType,
+      tone: tone,
+      verdict: verdict,
+      safety: CaseSafety(
+        riskLevel: SafetyRiskLevel.low,
+        safeForHumor: true,
+        safeForShare: verdict?.shareCard != null,
+        categories: const [],
+      ),
+      containsPotentialPii: false,
+      shareCount: 0,
+      scenarioSanitized: scenario,
+      sideASanitized: sideA,
+      sideBSanitized: sideB,
+    );
+  }
+
   static RelationshipType _relationshipFrom(Object? value) {
     final s = value?.toString();
     return RelationshipType.values.firstWhere(

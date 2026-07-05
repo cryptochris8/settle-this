@@ -6,10 +6,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../core/services/analytics_service.dart';
+import '../../../core/services/crashlytics_service.dart';
 import '../../../shared/widgets/judge_pip.dart';
 import '../../home/data/usage_repository.dart';
 import '../../submit_case/application/submit_case_form.dart';
 import '../../submit_case/data/verdict_repository.dart';
+import '../../submit_case/domain/relationship_type.dart';
+import '../domain/dispute_case.dart';
 
 const List<String> _quips = [
   'Reviewing both sides...',
@@ -59,27 +63,58 @@ class _VerdictLoadingScreenState extends ConsumerState<VerdictLoadingScreen>
       context.go(AppRoutes.home);
       return;
     }
+    final analytics = ref.read(analyticsServiceProvider);
+    unawaited(analytics.createVerdictStarted(tone: input.tone.wireValue));
     try {
       final response =
           await ref.read(verdictRepositoryProvider).createVerdict(input);
       if (!mounted) return;
+      unawaited(analytics.createVerdictCompleted(
+        tone: input.tone.wireValue,
+        status: response.status.wireValue,
+      ));
+      // When "Save to history" is off, the backend never persists a completed
+      // case, so re-reading it by id from Firestore would 404. Carry the inline
+      // verdict through as a non-persisted case so the result screen can render
+      // it without a stored document.
+      final ephemeralCase = input.saveCase
+          ? null
+          : DisputeCase.ephemeral(
+              response: response,
+              scenario: input.scenario,
+              sideA: input.sideA,
+              sideB: input.sideB,
+              relationshipType:
+                  input.relationshipType ?? RelationshipType.other,
+              tone: input.tone,
+            );
       ref.read(submitCaseFormProvider.notifier).reset();
       // Force the usage counter on /home to re-fetch — a verdict was just
       // spent. Next time the user lands on home, the chip reflects reality.
       ref.invalidate(userUsageProvider);
-      context.go('/verdict/${response.caseId}');
+      context.go('/verdict/${response.caseId}', extra: ephemeralCase);
     } on VerdictException catch (e) {
       if (!mounted) return;
       if (e.code == 'resource-exhausted') {
         // Out of quota — refresh the home counter so it shows "out" next
         // time too, and route to the usage limit screen.
+        unawaited(analytics.usageLimitReached());
         ref.invalidate(userUsageProvider);
         context.go(AppRoutes.usageLimit);
         return;
       }
+      unawaited(analytics.createVerdictFailed(e.code ?? 'unknown'));
       setState(() => _error = e.message);
-    } catch (_) {
+    } catch (error, stack) {
       if (!mounted) return;
+      unawaited(analytics.createVerdictFailed('unknown'));
+      unawaited(
+        ref.read(crashlyticsServiceProvider).recordError(
+              error,
+              stack,
+              reason: 'create_verdict_unexpected',
+            ),
+      );
       setState(() => _error = "Something went sideways. Let's try that again.");
     }
   }
@@ -159,7 +194,7 @@ class _LoadingBody extends StatelessWidget {
                   ),
                 ),
               ),
-              const JudgePip(size: 96),
+              const JudgePip(size: 96, pose: PipPose.thinking),
             ],
           ),
         ),

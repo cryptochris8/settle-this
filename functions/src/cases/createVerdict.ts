@@ -55,7 +55,6 @@ export const createVerdict = onCall(
       await reserveVerdictSlot({
         uid: auth.uid,
         isPaid,
-        isAnonymous: auth.isAnonymous,
         db,
       });
 

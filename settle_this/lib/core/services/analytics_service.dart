@@ -34,6 +34,7 @@ class AnalyticsService {
 
   // Onboarding
   Future<void> onboardingStarted() => _log('onboarding_started');
+  Future<void> onboardingCompleted() => _log('onboarding_completed');
   Future<void> ageGatePassed() => _log('age_gate_passed');
   Future<void> ageGateFailed() => _log('age_gate_failed');
   Future<void> disclaimerAccepted() => _log('disclaimer_accepted');
@@ -54,7 +55,7 @@ class AnalyticsService {
   Future<void> createVerdictCompleted({
     required String tone,
     required String status,
-    required String riskLevel,
+    String riskLevel = 'unknown',
   }) =>
       _log('create_verdict_completed', {
         'tone': tone,

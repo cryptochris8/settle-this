@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,24 +14,40 @@ import 'core/services/preferences_service.dart';
 import 'core/services/remote_config_service.dart';
 import 'firebase_options.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  await _initFirebase();
-  final remoteConfig = RemoteConfigService();
-  await remoteConfig.initialize();
-  runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        remoteConfigServiceProvider.overrideWithValue(remoteConfig),
-      ],
-      child: const SettleThisRoot(),
-    ),
+void main() {
+  // runZonedGuarded so uncaught async errors are reported to Crashlytics
+  // instead of vanishing. The binding must be initialized inside the same zone
+  // as runApp.
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
+      final prefs = await SharedPreferences.getInstance();
+      final firebaseReady = await _initFirebase();
+      if (firebaseReady) _installCrashHandlers();
+      final remoteConfig = RemoteConfigService();
+      await remoteConfig.initialize();
+      runApp(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            remoteConfigServiceProvider.overrideWithValue(remoteConfig),
+          ],
+          child: const SettleThisRoot(),
+        ),
+      );
+    },
+    (error, stack) {
+      if (Firebase.apps.isNotEmpty) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      } else if (kDebugMode) {
+        debugPrint('Uncaught zone error: $error');
+        debugPrintStack(stackTrace: stack);
+      }
+    },
   );
 }
 
-Future<void> _initFirebase() async {
+Future<bool> _initFirebase() async {
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -38,9 +57,25 @@ Future<void> _initFirebase() async {
       debugPrint('Firebase init failed (${error.code}).');
       debugPrintStack(stackTrace: stack);
     }
-    return;
+    return false;
   }
   await _activateAppCheck();
+  return true;
+}
+
+/// Routes framework and platform errors into Crashlytics. Only invoked once
+/// Firebase has initialized successfully. The default presentation is
+/// preserved so debug builds still surface the red error screen / console log.
+void _installCrashHandlers() {
+  final crashlytics = FirebaseCrashlytics.instance;
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    crashlytics.recordFlutterError(details);
+  };
+  WidgetsBinding.instance.platformDispatcher.onError = (error, stack) {
+    crashlytics.recordError(error, stack, fatal: true);
+    return true;
+  };
 }
 
 Future<void> _activateAppCheck() async {

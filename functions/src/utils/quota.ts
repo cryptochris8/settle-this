@@ -6,33 +6,34 @@ import { dateKey } from './auth';
 export interface QuotaPolicy {
   freeVerdictsPerDay: number;
   paidDailySoftCap: number;
-  anonymousLifetimeCap: number;
 }
 
 export const DEFAULT_QUOTA: QuotaPolicy = {
   freeVerdictsPerDay: 3,
   paidDailySoftCap: 100,
-  anonymousLifetimeCap: 2,
 };
 
 interface ReserveArgs {
   uid: string;
   isPaid: boolean;
-  isAnonymous: boolean;
   policy?: QuotaPolicy;
   db: firestore.Firestore;
 }
 
 /**
- * Atomically reserves one verdict slot. Returns the reserved usage doc snapshot.
+ * Atomically reserves one verdict slot.
  *
- * Security finding F7.1 — quota check + increment in a single transaction so
- * parallel callable invocations cannot bypass the daily limit.
+ * Security finding F7.1 — the quota check and increment run in a single
+ * transaction so parallel callable invocations cannot bypass the daily limit.
+ *
+ * Anonymous users are treated as the standard free tier (freeVerdictsPerDay).
+ * There is intentionally no separate anonymous lifetime cap: social sign-in is
+ * the eventual upgrade path, but until it ships an anon user IS the free tier,
+ * and the client UI advertises the daily allowance.
  */
 export async function reserveVerdictSlot({
   uid,
   isPaid,
-  isAnonymous,
   policy = DEFAULT_QUOTA,
   db,
 }: ReserveArgs): Promise<void> {
@@ -42,25 +43,12 @@ export async function reserveVerdictSlot({
     .doc(uid)
     .collection('usage')
     .doc(today);
-  const userRef = db.collection('users').doc(uid);
 
   await db.runTransaction(async (tx) => {
-    const [usageSnap, userSnap] = await Promise.all([
-      tx.get(usageRef),
-      tx.get(userRef),
-    ]);
+    const usageSnap = await tx.get(usageRef);
 
     const free = (usageSnap.get('freeVerdictsUsed') as number | undefined) ?? 0;
     const paid = (usageSnap.get('paidVerdictsUsed') as number | undefined) ?? 0;
-    const anonTotal =
-      (userSnap.get('totalAnonymousVerdicts') as number | undefined) ?? 0;
-
-    if (isAnonymous && anonTotal >= policy.anonymousLifetimeCap) {
-      throw new AppError(
-        'quota_exceeded',
-        'Anonymous trial limit reached. Sign in to keep going.',
-      );
-    }
 
     if (!isPaid && free >= policy.freeVerdictsPerDay) {
       throw new AppError(
@@ -96,16 +84,6 @@ export async function reserveVerdictSlot({
           userId: uid,
           freeVerdictsUsed: firestore.FieldValue.increment(1),
           lastUpdatedAt: now,
-        },
-        { merge: true },
-      );
-    }
-
-    if (isAnonymous) {
-      tx.set(
-        userRef,
-        {
-          totalAnonymousVerdicts: firestore.FieldValue.increment(1),
         },
         { merge: true },
       );

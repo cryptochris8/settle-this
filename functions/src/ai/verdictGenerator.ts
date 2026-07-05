@@ -6,6 +6,7 @@ import {
   buildUserMessage,
   PROMPT_VERSION,
   REPAIR_SYSTEM_PROMPT,
+  toneInstruction,
   VERDICT_GENERATOR_SYSTEM_PROMPT,
   type UserContent,
 } from './prompts';
@@ -29,6 +30,7 @@ export async function generateVerdict(content: UserContent): Promise<Verdict> {
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: VERDICT_GENERATOR_SYSTEM_PROMPT },
+        { role: 'system', content: toneInstruction(content) },
         { role: 'user', content: buildUserMessage(content) },
       ],
     });
@@ -59,6 +61,7 @@ export async function generateVerdict(content: UserContent): Promise<Verdict> {
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: VERDICT_GENERATOR_SYSTEM_PROMPT },
+        { role: 'system', content: toneInstruction(content) },
         { role: 'user', content: buildUserMessage(content) },
         { role: 'system', content: REPAIR_SYSTEM_PROMPT },
       ],

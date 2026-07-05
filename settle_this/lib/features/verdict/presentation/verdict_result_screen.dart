@@ -15,24 +15,30 @@ import 'verdict_card_widget.dart';
 import 'verdict_hero.dart';
 
 class VerdictResultScreen extends ConsumerWidget {
-  const VerdictResultScreen({required this.caseId, super.key});
+  const VerdictResultScreen({
+    required this.caseId,
+    this.initialCase,
+    super.key,
+  });
 
   final String caseId;
 
+  /// Optional non-persisted case (e.g. a "Save to history" = off verdict that
+  /// was never written to Firestore). When present it is rendered directly and
+  /// the Firestore stream is not consulted. Saved cases and deep links leave
+  /// this null and read from the stream.
+  final DisputeCase? initialCase;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final caseAsync = ref.watch(caseStreamProvider(caseId));
+    final preloaded = initialCase;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Verdict'),
-        leading: IconButton(
-          icon: const Icon(Icons.home_outlined),
-          tooltip: 'Home',
-          onPressed: () => context.go(AppRoutes.home),
-        ),
-      ),
-      body: caseAsync.when(
+    final Widget body;
+    if (preloaded != null) {
+      body = _VerdictBody(dispute: preloaded);
+    } else {
+      final caseAsync = ref.watch(caseStreamProvider(caseId));
+      body = caseAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => const _ErrorState(
           message: "We couldn't load that verdict. Check your connection and try again.",
@@ -45,7 +51,19 @@ class VerdictResultScreen extends ConsumerWidget {
           }
           return _VerdictBody(dispute: dispute);
         },
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Verdict'),
+        leading: IconButton(
+          icon: const Icon(Icons.home_outlined),
+          tooltip: 'Home',
+          onPressed: () => context.go(AppRoutes.home),
+        ),
       ),
+      body: body,
     );
   }
 }

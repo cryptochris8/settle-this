@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../app/constants.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../../core/services/preferences_service.dart';
 
 class OnboardingState {
@@ -82,6 +85,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   Future<void> completeOnboarding() async {
     await _prefs.setBool(PreferenceKeys.onboardingComplete, true);
     state = state.copyWith(onboardingComplete: true);
+    unawaited(ref.read(analyticsServiceProvider).onboardingCompleted());
   }
 
   Future<void> setDateOfBirth(DateTime dob) async {
@@ -110,6 +114,24 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = state.copyWith(
       acceptedDisclaimerVersion: AppConstants.currentDisclaimerVersion,
       disclaimerAcceptedAt: now,
+    );
+  }
+
+  /// Clears all locally-stored onboarding / age / consent data. Called on
+  /// account deletion so date of birth and disclaimer consent do not survive
+  /// an "irreversible" erase (privacy / GDPR Article 17).
+  Future<void> clearLocalData() async {
+    await _prefs.remove(PreferenceKeys.onboardingComplete);
+    await _prefs.remove(PreferenceKeys.dateOfBirthIso);
+    await _prefs.remove(PreferenceKeys.ageVerifiedAtIso);
+    await _prefs.remove(PreferenceKeys.disclaimerVersion);
+    await _prefs.remove(PreferenceKeys.disclaimerAcceptedAtIso);
+    state = const OnboardingState(
+      onboardingComplete: false,
+      dateOfBirth: null,
+      ageVerifiedAt: null,
+      acceptedDisclaimerVersion: null,
+      disclaimerAcceptedAt: null,
     );
   }
 }

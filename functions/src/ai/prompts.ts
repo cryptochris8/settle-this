@@ -186,3 +186,19 @@ export function buildUserMessage(content: UserContent): string {
     '</USER_CONTENT>',
   ].join('\n');
 }
+
+/**
+ * Builds a trusted, app-controlled instruction that selects the tone mode and
+ * states the relationship context. `tone` and `relationshipType` are validated
+ * enums (not free user text), so it is safe — and necessary — to place them in
+ * instruction space rather than inside the <USER_CONTENT> data block the model
+ * is told to ignore. This is what actually makes tone selection and
+ * "Try Another Tone" change the voice.
+ */
+export function toneInstruction(content: UserContent): string {
+  return [
+    `The user selected tone mode: "${content.tone}".`,
+    `Write the ENTIRE verdict in the ${content.tone} voice exactly as defined in your instructions above.`,
+    `The relationship between the two parties is: "${content.relationshipType}". Weigh the dispute with that context in mind.`,
+  ].join(' ');
+}

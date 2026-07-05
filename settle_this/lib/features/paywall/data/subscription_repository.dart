@@ -129,7 +129,10 @@ class SubscriptionRepository {
       final result = await Purchases.purchase(PurchaseParams.package(package));
       return _statusFromCustomerInfo(result.customerInfo);
     } on PurchasesErrorCode catch (code) {
-      throw SubscriptionException(code.toString());
+      throw SubscriptionException(
+        code.toString(),
+        cancelled: code == PurchasesErrorCode.purchaseCancelledError,
+      );
     } catch (error) {
       throw SubscriptionException(error.toString());
     }
@@ -160,8 +163,13 @@ class SubscriptionRepository {
 }
 
 class SubscriptionException implements Exception {
-  const SubscriptionException(this.message);
+  const SubscriptionException(this.message, {this.cancelled = false});
   final String message;
+
+  /// True when the user deliberately cancelled the purchase sheet — callers
+  /// should treat this as a silent no-op rather than an error to surface.
+  final bool cancelled;
+
   @override
   String toString() => 'SubscriptionException: $message';
 }

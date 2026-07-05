@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../core/services/analytics_service.dart';
 import '../data/subscription_repository.dart';
 
 class PaywallScreen extends ConsumerStatefulWidget {
@@ -23,6 +26,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   void initState() {
     super.initState();
     _offeringFuture = ref.read(subscriptionRepositoryProvider).currentOffering();
+    unawaited(ref.read(analyticsServiceProvider).paywallViewed());
   }
 
   Future<void> _purchase(Package package) async {
@@ -31,17 +35,23 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       _busy = true;
       _error = null;
     });
+    final analytics = ref.read(analyticsServiceProvider);
+    unawaited(analytics.purchaseStarted());
     try {
       final status =
           await ref.read(subscriptionRepositoryProvider).purchase(package);
       if (!mounted) return;
       if (status.isPlus) {
+        unawaited(analytics.purchaseCompleted());
         context.go(AppRoutes.home);
       } else {
         setState(() => _error = 'Purchase did not activate Plus.');
       }
     } on SubscriptionException catch (e) {
       if (!mounted) return;
+      // User backed out of the purchase sheet — not an error to surface.
+      if (e.cancelled) return;
+      unawaited(analytics.purchaseFailed(e.message));
       setState(() => _error = e.message);
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -54,6 +64,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       _busy = true;
       _error = null;
     });
+    unawaited(ref.read(analyticsServiceProvider).restorePurchaseTapped());
     final status =
         await ref.read(subscriptionRepositoryProvider).restore();
     if (!mounted) return;

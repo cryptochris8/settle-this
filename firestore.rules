@@ -23,7 +23,14 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isOwner(userId);
-      allow create: if isOwner(userId);
+      // Clients may create their own profile, but MUST NOT self-grant a paid
+      // subscription or seed quota fields — those are Cloud-Functions-only
+      // (subscription is set by the RevenueCat webhook). A client-created doc
+      // may only carry subscription.status == 'free' (or omit it entirely).
+      allow create: if isOwner(userId)
+        && (!('subscription' in request.resource.data)
+            || request.resource.data.subscription.status == 'free')
+        && !('totalAnonymousVerdicts' in request.resource.data);
       allow update: if isOwner(userId)
         && changedKeys().hasOnly([
           'displayName',

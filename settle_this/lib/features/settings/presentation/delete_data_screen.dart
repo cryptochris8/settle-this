@@ -8,6 +8,7 @@ import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../history/data/history_repository.dart';
+import '../../onboarding/data/onboarding_repository.dart';
 
 class DeleteDataScreen extends ConsumerStatefulWidget {
   const DeleteDataScreen({super.key});
@@ -54,15 +55,31 @@ class _DeleteDataScreenState extends ConsumerState<DeleteDataScreen> {
     if (!ok) return;
     setState(() => _busy = true);
 
-    final cases = await ref.read(historyStreamProvider.future);
-    final repo = ref.read(historyRepositoryProvider);
-    for (final c in cases) {
-      await repo.deleteCase(c.caseId);
+    var hadError = false;
+    try {
+      final cases = await ref.read(historyStreamProvider.future);
+      final repo = ref.read(historyRepositoryProvider);
+      for (final c in cases) {
+        try {
+          await repo.deleteCase(c.caseId);
+        } catch (_) {
+          hadError = true;
+        }
+      }
+    } catch (_) {
+      hadError = true;
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
     if (!mounted) return;
-    setState(() => _busy = false);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Saved verdicts deleted.')),
+      SnackBar(
+        content: Text(
+          hadError
+              ? 'Some verdicts could not be deleted. Please try again.'
+              : 'Saved verdicts deleted.',
+        ),
+      ),
     );
   }
 
@@ -87,6 +104,9 @@ class _DeleteDataScreenState extends ConsumerState<DeleteDataScreen> {
             .httpsCallable('deleteAccount')
             .call<Map<Object?, Object?>>(<String, Object?>{});
         await ref.read(authRepositoryProvider).signOut();
+        // Clear locally-cached age / DOB / disclaimer consent so it does not
+        // survive an "irreversible" account deletion (privacy / GDPR).
+        await ref.read(onboardingProvider.notifier).clearLocalData();
       }
     } catch (_) {
       failed = true;

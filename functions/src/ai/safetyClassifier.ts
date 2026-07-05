@@ -1,6 +1,5 @@
 import { logger } from 'firebase-functions/v2';
 
-import { AppError } from '../utils/errors';
 import { AI_MODEL_SAFETY, openaiClient } from './openaiClient';
 import {
   buildUserMessage,
@@ -100,32 +99,21 @@ function failClosed(
 }
 
 /**
- * Generator-side post-check. If the generator output mentions explicit
- * safety-keyword content, downgrade to soft-redirect rather than ship it.
+ * Generator-side post-check. Matches only genuinely-unsafe content
+ * (self-harm, doxxing) that must never ship; on a match, guardOutput() strips
+ * the share card and appends a safety note.
+ *
+ * Deliberately does NOT match "break up" / "divorce": those are legitimate
+ * things a fair verdict may reference (e.g. "this isn't a break-up-level
+ * problem"), and nuking an on-brand ruling for merely mentioning them was
+ * destroying good verdicts and their share cards.
  */
 const POST_CHECK_PATTERNS = [
   /\bkill (myself|yourself|themselves)\b/i,
   /\bsuicid(e|al)\b/i,
   /\bdoxx?\b/i,
-  /\bbreak up\b/i,
-  /\bdivorce\b/i,
 ];
 
 export function postCheckIsUnsafe(verdictText: string): boolean {
   return POST_CHECK_PATTERNS.some((re) => re.test(verdictText));
-}
-
-export function reservedReasons(): string[] {
-  return ['classifier_unavailable', 'moderation_flag'];
-}
-
-export function flagsForBlockedShare(s: SafetyClassification): boolean {
-  if (s.action !== 'allow') return true;
-  if (s.riskLevel !== 'low') return true;
-  return !s.safeForShare;
-}
-
-export function unused(): typeof AppError {
-  // Keep AppError import live; createVerdict is the consumer.
-  return AppError;
 }

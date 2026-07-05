@@ -21,6 +21,7 @@ import '../features/submit_case/presentation/review_case_screen.dart';
 import '../features/submit_case/presentation/side_input_screen.dart';
 import '../features/submit_case/presentation/submit_case_screen.dart';
 import '../features/submit_case/presentation/tone_selector_screen.dart';
+import '../features/verdict/domain/dispute_case.dart';
 import '../features/verdict/presentation/share_card_preview_screen.dart';
 import '../features/verdict/presentation/verdict_loading_screen.dart';
 import '../features/verdict/presentation/verdict_result_screen.dart';
@@ -165,6 +166,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.verdictDetail,
         builder: (context, state) => VerdictResultScreen(
           caseId: state.pathParameters['caseId'] ?? '',
+          initialCase: state.extra as DisputeCase?,
         ),
       ),
       GoRoute(
