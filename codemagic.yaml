@@ -23,6 +23,13 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
+      - name: Force CocoaPods (disable Flutter SPM)
+        # Flutter stable auto-adopts Swift Package Manager, which resolves a
+        # FirebaseFirestore SDK that mismatches cloud_firestore 6.3.0's native
+        # pipeline code (FLTPipelineParser.m -> FIRCollectionSourceStageBridge)
+        # and breaks the archive. This is a CocoaPods project (Podfile + the
+        # Pods-Runner xcconfig includes), so pin plugin resolution to Pods.
+        script: flutter config --no-enable-swift-package-manager
       - name: Resolve Flutter deps
         working_directory: settle_this
         script: flutter pub get
